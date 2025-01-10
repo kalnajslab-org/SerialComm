@@ -191,7 +191,6 @@ bool BufferGetInt32(int32_t * data, uint8_t * buffer, uint16_t buffer_size, uint
 
     return true;
 }
-#include <Arduino.h>
 bool BufferGetFloat(float * data, uint8_t * buffer, uint16_t buffer_size, uint16_t * curr_index)
 {
     uint32_t placeholder = 0;
