@@ -191,11 +191,13 @@ bool BufferGetInt32(int32_t * data, uint8_t * buffer, uint16_t buffer_size, uint
 
     return true;
 }
-
+#include <Arduino.h>
 bool BufferGetFloat(float * data, uint8_t * buffer, uint16_t buffer_size, uint16_t * curr_index)
 {
     uint32_t placeholder = 0;
-    float * temp;
+    // For some reason, temp needs to be volatile. Otherwise, the placeholder value is 
+    // not correctly read when dereferenced in *data = *temp.
+    volatile float * temp;
 
     if (!BufferGetUInt32(&placeholder, buffer, buffer_size, curr_index)) return false;
 
