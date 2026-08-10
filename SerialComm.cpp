@@ -581,6 +581,14 @@ bool SerialComm::ReadChecksum(uint32_t timeout)
         checksum_buffer[temp++] = rx_char;
     }
 
+    // wait for the closing semicolon rather than checking it immediately -- the
+    // digit loop above can exit (at the 5-digit cap) without ever having waited
+    // for this byte to arrive, so an immediate non-blocking read can catch it
+    // a few microseconds too early and spuriously fail. Intentionally not using
+    // GetNextChar/ReadSpecificChar here: this delimiter is not part of the
+    // checksummed content (mirrors WriteChecksum's own trailing WriteChar(';'),
+    // which is written after combined_checksum is already captured).
+    while (timeout > millis() && !serial_stream->available());
     if (';' != serial_stream->read()) return false;
 
     // convert the checksum
