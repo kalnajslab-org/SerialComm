@@ -588,17 +588,7 @@ bool SerialComm::ReadChecksum(uint32_t timeout)
     // GetNextChar/ReadSpecificChar here: this delimiter is not part of the
     // checksummed content (mirrors WriteChecksum's own trailing WriteChar(';'),
     // which is written after combined_checksum is already captured).
-    //
-    // Poll with peek(), matching the digit loop above -- NOT available(). On at
-    // least the Teensy 4.x (IMXRT) HardwareSerial implementation the two are not
-    // equivalent: peek() actively pulls a byte out of the hardware RX FIFO into
-    // the ring buffer when the buffer is empty, while available() only adds the
-    // FIFO's watermark count to its result without moving anything. A read()-side
-    // consumer can end up trusting a byte that nothing has actually made visible
-    // yet. peek() is the path already proven by the loop above; read() (next
-    // line) has its own independent FIFO check-and-pull, so this keeps every
-    // step of this function on a path that is actually exercised elsewhere here.
-    while (timeout > millis() && -1 == serial_stream->peek());
+    while (timeout > millis() && !serial_stream->available());
     if (';' != serial_stream->read()) return false;
 
     // convert the checksum
