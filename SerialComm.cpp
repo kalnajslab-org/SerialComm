@@ -568,20 +568,26 @@ bool SerialComm::ReadChecksum(uint32_t timeout)
     char rx_char = '\0';
     char checksum_buffer[6] = "";
     uint16_t checksum = 0;
+    bool found_delimiter = false;
 
-    // read the binary length
-    while (timeout > millis() && temp < 5) {
-        // check for delimiters
+    // read the checksum digits and their trailing ';' with identical
+    // peek()/read() polling semantics for every character
+    while (timeout > millis() && temp < 6) {
         read_ret = serial_stream->peek();
         if (-1 == read_ret) continue;
         rx_char = (char) read_ret;
-        if (rx_char == ';') break;
+
+        if (rx_char == ';') {
+            serial_stream->read();
+            found_delimiter = true;
+            break;
+        }
 
         rx_char = serial_stream->read();
         checksum_buffer[temp++] = rx_char;
     }
 
-    if (';' != serial_stream->read()) return false;
+    if (!found_delimiter) return false;
 
     // convert the checksum
     if (1 != sscanf(checksum_buffer, "%u", &temp)) return false;
